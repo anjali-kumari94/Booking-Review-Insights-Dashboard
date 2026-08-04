@@ -134,3 +134,11 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Ignore local database and logs
+*.db
+*.log
+
+# Ignore HTML scrapes or temporary output dumps
+*.html
+*.json
