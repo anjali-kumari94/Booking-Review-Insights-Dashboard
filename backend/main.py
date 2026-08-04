@@ -15,10 +15,16 @@ from typing import Optional
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "scraper"))
-from insights import topic_breakdown  # noqa: E402
+# TEMPORARILY DISABLED: The insights module is missing from the repository,
+# causing a fatal ModuleNotFoundError when Uvicorn starts.
+# sys.path.insert(0, str(Path(__file__).parent.parent / "scraper"))
+# from insights import topic_breakdown  # noqa: E402
 
-DB_PATH = Path(__file__).parent.parent / "data" / "reviews.db"
+# Determine the correct path to the database whether running locally or on Render
+DB_PATH = Path(__file__).parent / "data" / "reviews.db"
+# Fallback for nested local structures if needed:
+if not DB_PATH.exists() and (Path(__file__).parent.parent / "data" / "reviews.db").exists():
+    DB_PATH = Path(__file__).parent.parent / "data" / "reviews.db"
 
 app = FastAPI(title="Azzurro Hotels Review Insights API")
 
@@ -138,22 +144,23 @@ def weekly_stats(property: Optional[str] = None):
     }
 
 
-@app.get("/api/insights/topics")
-def insights_topics(property: Optional[str] = None, weeks: int = 1):
-    """Topic breakdown of negative reviews over the last `weeks` week(s)."""
-    start, _ = _week_bounds(weeks - 1)
-    _, end = _week_bounds(0)
-
-    query = "SELECT rating, text_liked, text_disliked, raw_text FROM reviews WHERE review_date BETWEEN ? AND ?"
-    params = [start, end]
-    if property:
-        query += " AND property = ?"
-        params.append(property)
-
-    with get_conn() as conn:
-        rows = conn.execute(query, params).fetchall()
-
-    return topic_breakdown([_row_to_dict(r) for r in rows])
+# TEMPORARILY DISABLED: Relies on the missing insights module.
+# @app.get("/api/insights/topics")
+# def insights_topics(property: Optional[str] = None, weeks: int = 1):
+#     """Topic breakdown of negative reviews over the last `weeks` week(s)."""
+#     start, _ = _week_bounds(weeks - 1)
+#     _, end = _week_bounds(0)
+#
+#     query = "SELECT rating, text_liked, text_disliked, raw_text FROM reviews WHERE review_date BETWEEN ? AND ?"
+#     params = [start, end]
+#     if property:
+#         query += " AND property = ?"
+#         params.append(property)
+#
+#     with get_conn() as conn:
+#         rows = conn.execute(query, params).fetchall()
+#
+#     return topic_breakdown([_row_to_dict(r) for r in rows])
 
 
 @app.get("/api/trends/sentiment")
